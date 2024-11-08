@@ -45,6 +45,19 @@ Values are stored as a string. There are no way to store numbers or other types 
 key some value as 1234
 ```
 
+#### Spaces and newlines
+
+Lines starting by a newline are ignored. Trailing spaces after values are ignored. A space between keys and values is needed, but there can be more than one. Blank lines between keys are ignored.
+
+#### Comments
+
+The digraph `//` introduce a single line comment. All text before the digraph is ignored.
+
+```hcf
+field: // this is a comment
+...
+```
+
 ### Programming interface
 
 See vshcfp.h
