@@ -8,7 +8,7 @@ This is a C interface for parsing .HCF files.
 
 ### About .HCF files
 
-This type of files are plain text files that follows the  Hugo's Config File format. It is not needed that the file which is going to be parsed have this extension, but it has to follow the format standard.
+This type of files are plain text files that follows the  Hugo's Config File format. It is not needed that the file which is going to be parsed have this extension, but it has to follow the format standard. Both .HCF and .hcf can be used.
 
 ### About HCF format standard
 
