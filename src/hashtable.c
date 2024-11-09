@@ -1,5 +1,6 @@
-#include "vshcfp.h"
+#include "../include/vshcfp.h"
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 /*
         // The idea is to store values using strdup for strings and  be able
@@ -19,13 +20,60 @@
  */
 
 /* Initialize a hashmap of a given size */
-void hashmap_new(__HashTable *table, size_t size);
+void
+hashmap_new(__HashTable *table, size_t size)
+{
+    table->node_arr = calloc(size, sizeof(HashTableNode));
+}
 
 /* Add a value to a hashmap */
-void hashmap_add(__HashTable *table, const char *key, char *value);
+void
+hashmap_add(__HashTable *table, const char *key, char *value)
+{
+    HashTableNode *node;
+    int            index;
+
+    index = hashmap_key(*table, key);
+    node  = table->node_arr + index;
+
+    while (node)
+        node = node->next;
+
+    node->key   = strdup(key);
+    node->value = strdup(value);
+    node->next  = calloc(1, sizeof(HashTableNode));
+}
 
 /* Remove a key-value pair from a hashmap */
-void hashmap_pop(__HashTable *table, const char *key);
+void
+hashmap_pop(__HashTable *table, const char *key)
+{
+    HashTableNode *node;
+    HashTableNode *last;
+    int            index;
+
+    index = hashmap_key(*table, key);
+    node  = table->node_arr + index;
+    last  = table->node_arr + index;
+
+    /* Get the node with key KEY */
+    while (node && strcmp(node->key, key))
+        node = node->next;
+
+    /* Key is not in the list */
+    if (!node)
+        return;
+
+    /* Get the last entry */
+    while (last->next)
+        last = last->next;
+
+    free(node->key);
+    free(node->value);
+    node->key   = last->key;
+    node->value = last->value;
+    free(last);
+}
 
 /* Get the value of a key in a hashmap or null if key not found*/
 char *
