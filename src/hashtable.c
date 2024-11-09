@@ -1,42 +1,28 @@
 #include "../include/vshcfp.h"
 #include <stddef.h>
+#include <stdio.h> // debug print
 #include <stdlib.h>
 #include <string.h>
-/*
-        // The idea is to store values using strdup for strings and  be able
-        // to store pointers to hash tables
-        typedef struct __hash_table_node
-        {
-            struct __hash_table_node *next;  // allow collisions
-            char                     *key;   // current element key
-            void                     *value; // current element value
-        } HashTableNode;
-
-        typedef struct
-        {
-            size_t         size;     // elements in node_arr
-            HashTableNode *node_arr; // array of nodes
-        } __HashTable;
- */
 
 /* Initialize a hashmap of a given size */
 void
-hashmap_new(__HashTable *table, size_t size)
+__hashmap_new(__HashTable *table, size_t size)
 {
     table->node_arr = calloc(size, sizeof(HashTableNode));
+    table->size     = size;
 }
 
 /* Add a value to a hashmap */
 void
-hashmap_add(__HashTable *table, const char *key, char *value)
+__hashmap_add(__HashTable *table, const char *key, char *value)
 {
     HashTableNode *node;
     int            index;
 
-    index = hashmap_key(*table, key);
+    index = __hashmap_key(*table, key);
     node  = table->node_arr + index;
 
-    while (node)
+    while (node->next)
         node = node->next;
 
     node->key   = strdup(key);
@@ -46,18 +32,18 @@ hashmap_add(__HashTable *table, const char *key, char *value)
 
 /* Remove a key-value pair from a hashmap */
 void
-hashmap_pop(__HashTable *table, const char *key)
+__hashmap_pop(__HashTable *table, const char *key)
 {
     HashTableNode *node;
     HashTableNode *last;
     int            index;
 
-    index = hashmap_key(*table, key);
+    index = __hashmap_key(*table, key);
     node  = table->node_arr + index;
     last  = table->node_arr + index;
 
     /* Get the node with key KEY */
-    while (node && strcmp(node->key, key))
+    while (node->next && strcmp(node->key, key))
         node = node->next;
 
     /* Key is not in the list */
@@ -72,37 +58,69 @@ hashmap_pop(__HashTable *table, const char *key)
     free(node->value);
     node->key   = last->key;
     node->value = last->value;
+
+    while (node->next != last)
+        node = node->next;
+    node->next = NULL;
+
     free(last);
 }
 
 /* Get the value of a key in a hashmap or null if key not found*/
 char *
-hashmap_get(__HashTable table, const char *key, char **value)
+__hashmap_get(__HashTable table, const char *key, char **value)
 {
-    int index = hashmap_key(table, key);
+    HashTableNode *node;
+    size_t         index;
 
-    for (HashTableNode *node = table.node_arr + index; node != NULL;
-         node                = node->next)
+    index = __hashmap_key(table, key);
+    node  = table.node_arr + index;
 
-        if (!strcmp(node->key, key))
-        {
-            *value = node->value;
-            return *value;
-        }
+    while (node->next && strcmp(node->key, key))
+        node = node->next;
 
-    *value = NULL;
-    return *value;
+    return (*value = node->value);
 }
 
 /* Get the numeric key given a string key and a hash table */
-int
-hashmap_key(__HashTable table, const char *key)
+size_t
+__hashmap_key(__HashTable table, const char *key)
 {
     /* Total sum algorithm */
-    int sum = 0;
+    unsigned sum = 0;
 
-    while (*key)
+    do
+    {
         sum += *key;
+    } while (*++key);
 
     return sum % table.size;
+}
+
+void
+__hashmap_destroy(__HashTable *table)
+{
+    HashTableNode *node;
+    HashTableNode *next;
+
+    for (size_t i = 0; i < table->size; i++)
+    {
+        node = table->node_arr + i;
+
+        while (node)
+        {
+            next = node->next;
+
+            free(node->key);
+            free(node->value);
+            if (node != table->node_arr + i)
+                free(node);
+
+            node = next;
+        }
+    }
+
+    free(table->node_arr);
+    table->node_arr = NULL;
+    table->size     = 0;
 }

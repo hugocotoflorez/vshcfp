@@ -23,15 +23,17 @@ typedef struct
 } __HashTable;
 
 /* Initialize a hashmap of a given size */
-void hashmap_new(__HashTable *table, size_t size);
+void __hashmap_new(__HashTable *table, size_t size);
 /* Add a value to a hashmap */
-void hashmap_add(__HashTable *table, const char *key, char *value);
+void __hashmap_add(__HashTable *table, const char *key, char *value);
 /* Remove a key-value pair from a hashmap */
-void hashmap_pop(__HashTable *table, const char *key);
+void __hashmap_pop(__HashTable *table, const char *key);
 /* Get the value of a key in a hashmap or null if key not found*/
-char *hashmap_get(__HashTable table, const char *key, char **value);
+char *__hashmap_get(__HashTable table, const char *key, char **value);
 /* Get the numeric key given a string key and a hash table */
-int hashmap_key(__HashTable table, const char *key);
+size_t __hashmap_key(__HashTable table, const char *key);
+/* */
+void __hashmap_destroy(__HashTable *table);
 
 /* Type aliases */
 
