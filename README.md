@@ -2,6 +2,9 @@
 
 Very Simple Hugo's Config File Parser
 
+>[!CAUTION]
+> I have an issue in the parser, I only accept one word as a value, It is easy to accept all the line until the // or eof.
+
 ## About vshcfp
 
 This is a C interface for parsing .HCF files.
