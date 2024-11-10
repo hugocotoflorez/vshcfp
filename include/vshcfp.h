@@ -25,26 +25,26 @@ typedef struct
 /* Initialize a hashmap of a given size */
 void __hashmap_new(__HashTable *table, size_t size);
 /* Add a value to a hashmap */
-void __hashmap_add(__HashTable *table, const char *key, char *value);
+void __hashmap_add(__HashTable *table, const char *key, void *value);
 /* Remove a key-value pair from a hashmap */
 void __hashmap_pop(__HashTable *table, const char *key);
 /* Get the value of a key in a hashmap or null if key not found*/
-char *__hashmap_get(__HashTable table, const char *key, char **value);
+void *__hashmap_get(__HashTable table, const char *key, void **value);
 /* Get the numeric key given a string key and a hash table */
 size_t __hashmap_key(__HashTable table, const char *key);
 /* */
 void __hashmap_destroy(__HashTable *table);
 
 /* Type aliases */
-
 typedef __HashTable HcfOpts;  // Options hash of hashes
 typedef __HashTable HcfField; // fields hash
 
 /* VSHCFP interface */
-
-HcfOpts  hcf_load(const char *file);
-HcfField hcf_get_field(HcfOpts opts, const char *field);
-char    *hcf_get_value(HcfField field, const char *key);
-
+#define FIELDS_N 10
+#define OPTS_N   10
+HcfOpts   hcf_load(const char *file);
+HcfField *hcf_get_field(HcfOpts opts, const char *field);
+char     *hcf_get_value(HcfField field, const char *key);
+char     *hcf_get(HcfOpts opts, const char *field, const char *key);
 
 #endif

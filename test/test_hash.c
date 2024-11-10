@@ -11,7 +11,7 @@ main(void)
     __hashmap_new(&table, 10);
 
     printf("%s\n", "Getting Hugo");
-    __hashmap_get(table, "Hugo", &value);
+    __hashmap_get(table, "Hugo", (void*)&value);
 
     printf("%s\n", "Adding Hugo");
     __hashmap_add(&table, "Hugo", "Value for Hugo");
@@ -20,19 +20,19 @@ main(void)
     __hashmap_add(&table, "Other", "Value for Other");
 
     printf("%s\n", "Getting Hugo");
-    __hashmap_get(table, "Hugo", &value);
+    __hashmap_get(table, "Hugo", (void*)&value);
 
     printf("%s\n", "Getting Other");
-    __hashmap_get(table, "Other", &value);
+    __hashmap_get(table, "Other", (void*)&value);
 
     printf("%s\n", "Poping Hugo");
     //__hashmap_pop(&table, "Hugo");
 
     printf("%s\n", "Getting Hugo");
-    __hashmap_get(table, "Hugo", &value);
+    __hashmap_get(table, "Hugo", (void*)&value);
 
     printf("%s\n", "Poping Other");
-    //__hashmap_pop(&table, "Other");
+    __hashmap_pop(&table, "Other");
 
     __hashmap_destroy(&table);
 

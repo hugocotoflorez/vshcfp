@@ -14,7 +14,7 @@ __hashmap_new(__HashTable *table, size_t size)
 
 /* Add a value to a hashmap */
 void
-__hashmap_add(__HashTable *table, const char *key, char *value)
+__hashmap_add(__HashTable *table, const char *key, void *value)
 {
     HashTableNode *node;
     int            index;
@@ -26,7 +26,7 @@ __hashmap_add(__HashTable *table, const char *key, char *value)
         node = node->next;
 
     node->key   = strdup(key);
-    node->value = strdup(value);
+    node->value = value;
     node->next  = calloc(1, sizeof(HashTableNode));
 }
 
@@ -34,6 +34,7 @@ __hashmap_add(__HashTable *table, const char *key, char *value)
 void
 __hashmap_pop(__HashTable *table, const char *key)
 {
+    /* TODO: this is a piece of shit */
     HashTableNode *node;
     HashTableNode *last;
     int            index;
@@ -55,20 +56,20 @@ __hashmap_pop(__HashTable *table, const char *key)
         last = last->next;
 
     free(node->key);
-    free(node->value);
     node->key   = last->key;
     node->value = last->value;
 
     while (node->next != last)
         node = node->next;
+
     node->next = NULL;
 
     free(last);
 }
 
 /* Get the value of a key in a hashmap or null if key not found*/
-char *
-__hashmap_get(__HashTable table, const char *key, char **value)
+void *
+__hashmap_get(__HashTable table, const char *key, void **value)
 {
     HashTableNode *node;
     size_t         index;
@@ -79,7 +80,10 @@ __hashmap_get(__HashTable table, const char *key, char **value)
     while (node->next && strcmp(node->key, key))
         node = node->next;
 
-    return (*value = node->value);
+    if (value)
+        *value = node->value;
+
+    return node->value;
 }
 
 /* Get the numeric key given a string key and a hash table */
@@ -112,7 +116,6 @@ __hashmap_destroy(__HashTable *table)
             next = node->next;
 
             free(node->key);
-            free(node->value);
             if (node != table->node_arr + i)
                 free(node);
 
