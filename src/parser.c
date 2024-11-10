@@ -10,6 +10,18 @@ char      key[LINEMAX]   = { '\0' };
 char      value[LINEMAX] = { '\0' };
 char      field[LINEMAX] = { '\0' };
 
+
+#if !defined(_GNU_SOURCE)
+char* strchrnul(const char* str, char c)
+{
+    char* ret;
+    ret = strchr(str,c);
+
+    return (char*)(ret?: str + strlen(str));
+}
+#endif
+
+
 int
 __is_valid_c(char c)
 {
@@ -103,8 +115,8 @@ __parse_line(HcfOpts *opts, char *line)
 
             c = __remove_spaces(c);
 
-            __get_word(c, buffer);
-            strcpy(value, buffer);
+            *strchrnul(c, '/') = '\0';
+            strcpy(value, c);
 
             //printf("Adding entry [%s] (%s): (%s)\n", field, key, value);
             __hashmap_add(field_table, key, strdup(value));
