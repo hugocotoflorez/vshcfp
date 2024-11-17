@@ -10,16 +10,11 @@ char      key[LINEMAX]   = { '\0' };
 char      value[LINEMAX] = { '\0' };
 char      field[LINEMAX] = { '\0' };
 
-
-#if !defined(_GNU_SOURCE)
-char* strchrnul(const char* str, char c)
+char *
+__strchrnul(char str[const], char c)
 {
-    char* ret;
-    ret = strchr(str,c);
-
-    return (char*)(ret?: str + strlen(str));
+    return strchr(str, c) ?: str + strlen(str);
 }
-#endif
 
 
 int
@@ -58,24 +53,26 @@ void
 __parse_line(HcfOpts *opts, char *line)
 {
     char  buffer[LINEMAX];
-    char *c;
+    char *current;
+    char *temp;
+    int   len;
 
     /* Allow identation */
     line = __remove_spaces(line);
 
     if (!*line)
     {
-        //puts("[EMTY]");
+        // puts("[EMTY]");
         return;
     }
 
 
-    c = __get_word(line, buffer);
+    current = __get_word(line, buffer);
 
     // printf("[C] \'%c\'\n", *c);
     // printf("[BUF] \"%s\"\n", buffer);
 
-    switch (*c)
+    switch (*current)
     {
         case ':':
             /* If word last char is ':', it is a field name
@@ -83,42 +80,62 @@ __parse_line(HcfOpts *opts, char *line)
              * Then a field hashmap is created and it is added
              * to the options hashmap. */
             strcpy(field, buffer);
-            //printf("Adding field: %s\n", field);
+            // printf("Adding field: %s\n", field);
             field_table = malloc(sizeof(HcfField));
             __hashmap_new(field_table, OPTS_N);
             __hashmap_add(opts, field, field_table);
-            __hashmap_add(field_table, "key", "value");
-            //puts("adding test key-value to field hashmap");
             break;
 
         case '/':
             /* first character is invalid */
-            //puts("[C=/] Comment line");
+            // puts("[C=/] Comment line");
             break;
 
         default:
 
-            if (c == buffer)
+            if (current == buffer)
             {
                 /* first character is invalid */
-                //puts("[C=BUF] empty line");
+                // puts("[C=BUF] empty line");
                 break;
             }
 
             if (!field_table)
             {
-                //puts("[FTBLE] field table not created");
+                // puts("[FTBLE] field table not created");
                 break;
             }
 
             strcpy(key, buffer);
 
-            c = __remove_spaces(c);
+            current = __remove_spaces(current);
 
-            *strchrnul(c, '/') = '\0';
-            strcpy(value, c);
+            /* Check for // (comment introducer).
+             * If a '\' was placed before the "//", it
+             * is analized as "//" and not as a comment. */
+            temp = current;
+            while (*temp && !strncmp((temp = __strchrnul(temp, '/')), "//", 2))
+            {
+                /* I think there would be allways a char in temp-1, so I
+                 * can check it without underflow */
+                if (temp[-1] != '\\')
+                    *temp = '\0';
 
-            //printf("Adding entry [%s] (%s): (%s)\n", field, key, value);
+                /* If the comment introducer has a '\' before it, it
+                 * get it as a text and remove the '\' char in temp string
+                 * (overlaping it with the remainig string int temp */
+                else
+                {
+                    len = strlen(temp);
+                    memmove(temp - 1, temp, len);
+                    temp[len - 1] = '\0';
+                }
+                ++temp;
+            }
+
+            strcpy(value, current);
+
+            // printf("Adding entry [%s] (%s): (%s)\n", field, key, value);
             __hashmap_add(field_table, key, strdup(value));
     }
 }
@@ -131,8 +148,8 @@ __parse(HcfOpts *opts, FILE *f)
 
     while (fgets(line, LINEMAX, f))
     {
-        *strchrnul(line, '\n') = '\0';
-        // printf("[LINE] \"%s\"\n", line);
+        *__strchrnul(line, '\n') = '\0';
+        printf("[LINE] \"%s\"\n", line);
         __parse_line(opts, line);
     }
 }
@@ -155,4 +172,33 @@ hcf_load(const char *file)
     __parse(&opts, f);
 
     return opts;
+}
+
+void
+hcf_destroy(HcfOpts *opts)
+{
+    HashTableNode *node;
+    HashTableNode *next;
+
+    for (size_t i = 0; i < opts->size; i++)
+    {
+        node = opts->node_arr + i;
+
+        while (node)
+        {
+            next = node->next;
+
+            free(node->key);
+            __hashmap_destroy(node->value);
+
+            if (node != opts->node_arr + i)
+                free(node);
+
+            node = next;
+        }
+    }
+
+    free(opts->node_arr);
+    opts->node_arr = NULL;
+    opts->size     = 0;
 }

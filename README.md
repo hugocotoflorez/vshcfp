@@ -61,3 +61,7 @@ field: // this is a comment
 ### Programming interface
 
 See vshcfp.h
+
+## Issues and Todo's
+
+Value string cant have a '/' neither a "\/"

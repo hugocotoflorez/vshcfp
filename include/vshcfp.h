@@ -1,50 +1,40 @@
 #ifndef VSHCFP_H
 #define VSHCFP_H
 
-#include <stddef.h>
-
-/* Implementation details */
-
-/* Hash table */
-
-// The idea is to store values using strdup for strings and  be able
-// to store pointers to hash tables
-typedef struct __hash_table_node
-{
-    struct __hash_table_node *next;  // allow collisions
-    char                     *key;   // current element key
-    void                     *value; // current element value
-} HashTableNode;
-
-typedef struct
-{
-    size_t         size;     // elements in node_arr
-    HashTableNode *node_arr; // array of nodes
-} __HashTable;
-
-/* Initialize a hashmap of a given size */
-void __hashmap_new(__HashTable *table, size_t size);
-/* Add a value to a hashmap */
-void __hashmap_add(__HashTable *table, const char *key, void *value);
-/* Remove a key-value pair from a hashmap */
-void __hashmap_pop(__HashTable *table, const char *key);
-/* Get the value of a key in a hashmap or null if key not found*/
-void *__hashmap_get(__HashTable table, const char *key, void **value);
-/* Get the numeric key given a string key and a hash table */
-size_t __hashmap_key(__HashTable table, const char *key);
-/* */
-void __hashmap_destroy(__HashTable *table);
+#include "hcf_hashmap.h"
 
 /* Type aliases */
 typedef __HashTable HcfOpts;  // Options hash of hashes
 typedef __HashTable HcfField; // fields hash
 
-/* VSHCFP interface */
+/* Implementation details */
+
+/* The following numbers are just used to adjust hashmap memory efficiency.
+ * The numbers dont set a maximum. The closest the number is to the reality
+ * it would be more memory and time efficient. */
+
+/* Number of fields in each file */
 #define FIELDS_N 10
-#define OPTS_N   10
-HcfOpts   hcf_load(const char *file);
+/* Number of key-value entries in each field */
+#define OPTS_N 10
+
+/* VSHCFP interface */
+
+/* Load a file. File fields and options have to be defined following
+ * the HCF standard. They are stored in a HcfOpts struct that have to
+ * be destroyed. */
+HcfOpts hcf_load(const char *file);
+
+/* Get the field map given their name. */
 HcfField *hcf_get_field(HcfOpts opts, const char *field);
-char     *hcf_get_value(HcfField field, const char *key);
-char     *hcf_get(HcfOpts opts, const char *field, const char *key);
+
+/* Get the value of a given key of a field. */
+char *hcf_get_value(HcfField field, const char *key);
+
+/* Get a value given a field name and the options data structure */
+char *hcf_get(HcfOpts opts, const char *field, const char *key);
+
+/* destroy a yet created Options table */
+void hcf_destroy(HcfOpts *opts);
 
 #endif

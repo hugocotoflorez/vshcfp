@@ -107,6 +107,9 @@ __hashmap_destroy(__HashTable *table)
     HashTableNode *node;
     HashTableNode *next;
 
+    if (!table)
+        return;
+
     for (size_t i = 0; i < table->size; i++)
     {
         node = table->node_arr + i;
@@ -116,6 +119,7 @@ __hashmap_destroy(__HashTable *table)
             next = node->next;
 
             free(node->key);
+            free(node->value);
             if (node != table->node_arr + i)
                 free(node);
 

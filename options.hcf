@@ -1,3 +1,11 @@
 field1:
-    key1 value1
+    key1 10 // a single value with a comment
+    key2 a string value // with a comment
+    key3 a tring value with \// a coment that is not a comment
+    key4 a string value without a comment // comment
+    // comment in key wtf
+\// value // starting a line by a key that is a non-comment trigraph
 
+idk // key without value
+comment without body //
+com jump without body \//
