@@ -164,7 +164,7 @@ hcf_load(const char *file)
 
     if (!f)
     {
-        perror("File not found");
+        perror("Hcf_load");
         return (__HashTable) { 0 };
     }
 
@@ -190,6 +190,7 @@ hcf_destroy(HcfOpts *opts)
 
             free(node->key);
             __hashmap_destroy(node->value);
+            free(node->value);
 
             if (node != opts->node_arr + i)
                 free(node);
