@@ -149,7 +149,6 @@ __parse(HcfOpts *opts, FILE *f)
     while (fgets(line, LINEMAX, f))
     {
         *__strchrnul(line, '\n') = '\0';
-        printf("[LINE] \"%s\"\n", line);
         __parse_line(opts, line);
     }
 }
@@ -164,7 +163,7 @@ hcf_load(const char *file)
 
     if (!f)
     {
-        perror("Hcf_load");
+        perror(file);
         return (__HashTable) { 0 };
     }
 
