@@ -74,6 +74,9 @@ __hashmap_get(__HashTable table, const char *key, void **value)
     HashTableNode *node;
     size_t         index;
 
+    if (!key || !table.size)
+        return NULL;
+
     index = __hashmap_key(table, key);
     node  = table.node_arr + index;
 
@@ -93,10 +96,11 @@ __hashmap_key(__HashTable table, const char *key)
     /* Total sum algorithm */
     unsigned sum = 0;
 
-    do
-    {
-        sum += *key;
-    } while (*++key);
+    if (!key || !table.size)
+        return 0;
+
+    for (int i = 0; key[i]; ++i)
+        sum += i * key[i];
 
     return sum % table.size;
 }

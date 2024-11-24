@@ -1,6 +1,6 @@
 field1:
     key1 10 // a single value with a comment
-    key2 a string value // with a comment
+    key2 "a string value // with a comment into a string"
     key3 a tring value with \// a coment that is not a comment
     key4 a string value without a comment // comment
     // comment in key wtf

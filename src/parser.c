@@ -28,6 +28,9 @@ __is_valid_c(char c)
 char *
 __get_word(char *line, char *buffer)
 {
+    int len;
+    int i;
+
     do
     {
         *buffer = *line;
@@ -113,6 +116,13 @@ __parse_line(HcfOpts *opts, char *line)
             /* Check for // (comment introducer).
              * If a '\' was placed before the "//", it
              * is analized as "//" and not as a comment. */
+            if (*current == '"')
+            {
+                ++current;
+                *__strchrnul(current, '"') = '\0';
+                goto __insert__;
+            }
+
             temp = current;
             while (*temp && !strncmp((temp = __strchrnul(temp, '/')), "//", 2))
             {
@@ -133,6 +143,7 @@ __parse_line(HcfOpts *opts, char *line)
                 ++temp;
             }
 
+        __insert__:
             strcpy(value, current);
 
             // printf("Adding entry [%s] (%s): (%s)\n", field, key, value);
