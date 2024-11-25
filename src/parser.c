@@ -28,9 +28,6 @@ __is_valid_c(char c)
 char *
 __get_word(char *line, char *buffer)
 {
-    int len;
-    int i;
-
     do
     {
         *buffer = *line;
@@ -52,6 +49,30 @@ __remove_spaces(char *str)
     return str;
 }
 
+/* STR is a string starting at '/'. This function return a pointer
+ * of the first char in STR that is not part of the escape character */
+char *
+__parse_escape_sequences(char *str)
+{
+    if (str == NULL)
+    {
+        puts("str is null");
+        return NULL;
+    }
+    printf("Esc Parsing (%s)\n", str + 1);
+    if (str[1] == 'e' && str[2] == '[')
+    {
+        puts("type 1");
+        return str + 2;
+    }
+    if (str[1] == '0' && str[2] == '3' && str[3] == '3' && str[4] == '[')
+    {
+        puts("type 2");
+        return str + 4;
+    }
+    return NULL;
+}
+
 void
 __parse_line(HcfOpts *opts, char *line)
 {
@@ -59,6 +80,7 @@ __parse_line(HcfOpts *opts, char *line)
     char *current;
     char *temp;
     int   len;
+    char *c;
 
     /* Allow identation */
     line = __remove_spaces(line);
@@ -112,6 +134,17 @@ __parse_line(HcfOpts *opts, char *line)
             strcpy(key, buffer);
 
             current = __remove_spaces(current);
+
+            char *curr_start = current;
+            c                = current;
+
+            while ((current = __parse_escape_sequences((c = strchr(c, '\\')))))
+            {
+                *c++ = '\033';
+                memmove(c, current, strlen(current) + 1);
+                ++c;
+            }
+            current = curr_start;
 
             /* Check for // (comment introducer).
              * If a '\' was placed before the "//", it
