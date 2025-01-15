@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define LINEMAX 100
+#define LINEMAX 2048
 
 HcfField *field_table    = NULL;
 char      key[LINEMAX]   = { '\0' };
@@ -50,27 +50,32 @@ __remove_spaces(char *str)
 }
 
 /* STR is a string starting at '/'. This function return a pointer
- * of the first char in STR that is not part of the escape character */
+ * of the first char in STR that is not part of the escape character or NULL*/
 char *
-__parse_escape_sequences(char *str)
+__parse_escape_sequences(char *str, char *c)
 {
+    /* This code sucks*/
     if (str == NULL)
     {
-        puts("str is null");
         return NULL;
     }
-    printf("Esc Parsing (%s)\n", str + 1);
     if (str[1] == 'e' && str[2] == '[')
     {
-        puts("type 1");
+        *c = '\033';
         return str + 2;
     }
     if (str[1] == '0' && str[2] == '3' && str[3] == '3' && str[4] == '[')
     {
-        puts("type 2");
+        *c = '\033';
         return str + 4;
     }
-    return NULL;
+
+    if (str[1] == 'n')
+    {
+        *c = '\n';
+        return str + 2;
+    }
+    return "";
 }
 
 void
@@ -81,6 +86,7 @@ __parse_line(HcfOpts *opts, char *line)
     char *temp;
     int   len;
     char *c;
+    char  chr;
 
     /* Allow identation */
     line = __remove_spaces(line);
@@ -138,11 +144,16 @@ __parse_line(HcfOpts *opts, char *line)
             char *curr_start = current;
             c                = current;
 
-            while ((current = __parse_escape_sequences((c = strchr(c, '\\')))))
+            while ((current = __parse_escape_sequences((c = strchr(c, '\\')), &chr)))
             {
-                *c++ = '\033';
-                memmove(c, current, strlen(current) + 1);
-                ++c;
+                if (*current)
+                {
+                    *c++ = chr;
+                    memmove(c, current, strlen(current) + 1);
+                    c = current - 1;
+                }
+                else
+                    ++c;
             }
             current = curr_start;
 
